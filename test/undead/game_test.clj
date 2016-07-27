@@ -87,3 +87,24 @@
                   (filter :revealed?)
                   set)
              #{{:face :h1, :revealed? true}})))))
+
+;; YES, this is an actual word, it means "when the fog comes"
+(deftest smokefall
+  (is (:foggy? (->> (create-game)
+                    (reveal-one :fg)
+                    (reveal-one :fg)))))
+
+(deftest revealing-2-zombies
+  (let [zombified-game (->> (create-game)
+                            (reveal-one :zo)
+                            (reveal-one :zo))]
+    (testing "takes away 3 sand from the remaining time"
+      (is (= [:zombie :zombie :zombie :remaining]
+             (->> zombified-game
+                  :sand
+                  (take 4)))))
+    (testing "turns the graveyard into a zombie"
+      (is (= (->> zombified-game :tiles (map :face) frequencies)
+             {:h1 2 :h2 2 :h3 2 :h4 2 :h5 2
+              :fg 2
+              :zo 4})))))
