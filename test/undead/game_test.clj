@@ -2,8 +2,8 @@
   (:require [clojure.test :refer :all]
             [undead.game :refer :all]))
 
-;;;;;;;;;;;;
 ;; Helper ;;
+;;;;;;;;;;;;
 
 (defn- index-of-face [game face]
   (->> (map-indexed vector (:tiles game))
@@ -14,8 +14,8 @@
 (defn reveal-one [face game]
   (reveal-tile game (index-of-face game face)))
 
-;;;;;;;;;;;
 ;; Tests ;;
+;;;;;;;;;;;
 
 (deftest game-creation
   (testing "tile frequencies"
@@ -35,7 +35,7 @@
            {:remaining 30}))))
 
 
-(deftest revealing-tiles
+(deftest reveal-tiles
   (testing "revealing the first tile"
     (is (= (->> (reveal-tile (create-game) 0)
                 :tiles (filter :revealed?) count)
@@ -94,7 +94,7 @@
                     (reveal-one :fg)
                     (reveal-one :fg)))))
 
-(deftest revealing-2-zombies
+(deftest reveal-2-zombies
   (let [zombified-game (->> (create-game)
                             (reveal-one :zo)
                             (reveal-one :zo))]
