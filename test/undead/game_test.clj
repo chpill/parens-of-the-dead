@@ -108,3 +108,35 @@
              {:h1 2 :h2 2 :h3 2 :h4 2 :h5 2
               :fg 2
               :zo 4})))))
+
+(deftest prep-the-game
+  (testing "hide all the faces"
+    (is (= (->> (create-game)
+                prep
+                :tiles
+                (map :face)
+                frequencies)
+           {nil 16})))
+  (testing "keeps the revealed faces"
+    (is (= (->> (create-game)
+                (reveal-one :h1)
+                prep
+                :tiles
+                (map :face)
+                frequencies)
+           {nil 15, :h1 1})))
+  (testing "keeps the matched faces"
+    (is (= (->> (create-game)
+                (reveal-one :h1)
+                (reveal-one :h1)
+                prep
+                :tiles
+                (map :face)
+                frequencies)
+           {nil 14, :h1 2})))
+  (testing "add ids to recognize the tiles"
+    (is (= (->> (create-game)
+                prep
+                :tiles
+                (map :id))
+           (range 0 16)))))

@@ -1,12 +1,19 @@
 (ns undead.web
-  (:require [compojure.core :refer [defroutes GET]]
-             [compojure.route :refer [resources]]))
+  (:require [chord.http-kit :as chord]
+            [clojure.core.async :refer [<! >! go-loop]]
+            [compojure
+             [core :refer [defroutes GET]]
+             [route :refer [resources]]]
+            [undead.game :as game]))
 
-(defn index [req]
-  {:status 200
-   :headers {"Content-Type" "text/html"}
-   :body "Hello from compojure"})
+(defn- ws-hander [req]
+  (chord/with-channel req ws-channel
+    (go-loop [game (game/create-game)]
+      (>! ws-channel (game/prep game))
+      ;; Use we let here not to create a memory leak when the channel closes!
+      (when-let [tile-index (:message (<! ws-channel))]
+        (recur (game/reveal-tile game tile-index))))))
 
 (defroutes app
-  (GET "/" [] index)
+  (GET "/ws" [] ws-hander)
   (resources "/"))

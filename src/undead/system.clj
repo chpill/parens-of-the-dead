@@ -17,7 +17,7 @@
   ;; TODO check if there is already a running server?
   (start [this]
     ;; var quote app to avoid stale definitions
-    (assoc this :server (start-server #'app 8080)))
+    (assoc this :server (start-server #'app 9009)))
   (stop [this]
     (stop-server (:server this))
     (dissoc this :server)))
