@@ -59,7 +59,7 @@
 
 (defn- init-concealment [tile]
   (if (:revealed? tile)
-    (assoc tile :conceal-countdown 3)
+    (assoc tile :conceal-countdown 5)
     tile))
 
 (defn- check-for-concealment [game]
@@ -77,7 +77,8 @@
 
 (defn- hide-faces [tile]
   (if (or (:matched? tile)
-          (:revealed? tile))
+          (:revealed? tile)
+          (:conceal-countdown tile))
     tile
     (dissoc tile :face)))
 
@@ -94,7 +95,8 @@
 (defn- conceal-faces [tile]
   (case (:conceal-countdown tile)
     nil tile
-    1 (dissoc tile :conceal-countdown :revealed?)
+    3 (-> tile (dissoc :revealed?) (update :conceal-countdown dec))
+    1 (dissoc tile :conceal-countdown)
     (update tile :conceal-countdown dec)))
 
 (defn tick [game]

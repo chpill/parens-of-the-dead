@@ -9,7 +9,8 @@
 ;; We don't want to do this on every figwheel reload...
 (defonce run-once
   (go
-    (let [{:keys [ws-channel error]} (<! (chord-cli/ws-ch "ws://localhost:9009/ws"))]
+    (let [{:keys [ws-channel error]}
+          (<! (chord-cli/ws-ch "ws://localhost:9009/ws"))]
       (when error (throw error))
       (loop []
         (when-let [game (:message (<! ws-channel))]

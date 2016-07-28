@@ -159,4 +159,13 @@
                 (reveal-one :h2)
                 tick tick tick
                 :tiles (filter :revealed?) count)
-           0))))
+           0)))
+  (testing
+      "the face remains after 4 ticks so that they can be displayed during
+  \"flip back\" animation")
+  (is (= (->> (create-game)
+              (reveal-one :h1)
+              (reveal-one :h2)
+              tick tick tick tick
+              prep :tiles (map :face) frequencies)
+         {nil 14, :h1 1, :h2 1})))

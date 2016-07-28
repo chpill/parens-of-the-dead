@@ -38,5 +38,4 @@
            (Timers (:sand game))))
 
 (defn render-game [game container reveal-ch]
-  (qt/render (Game game reveal-ch)
-             container))
+  (qt/render (Game game reveal-ch) container))
