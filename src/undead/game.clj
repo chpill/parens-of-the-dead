@@ -15,11 +15,13 @@
 (defn- can-reveal? [game]
   (> 2 (count (revealed-tiles game))))
 
-(defn- match-revealed [tiles]
-  (mapv (fn [tile] (if (:revealed? tile)
-           {:face (:face tile) :matched? true}
-           tile))
-        tiles))
+(defn update-tiles [game f]
+  (update-in game [:tiles] #(mapv f %)))
+
+(defn- match-revealed [tile]
+  (if (:revealed? tile)
+    {:face (:face tile) :matched? true}
+    tile))
 
 (defn get-match [game]
   (let [revealed (revealed-tiles game)]
@@ -33,40 +35,36 @@
           (drop (count replacement)
                 (drop-while (complement #{:remaining}) sand))))
 
-(defn- wake-the-dead
-  [tiles]
-  (mapv (fn [tile]
-          (if (= :gy (:face tile))
-            (assoc tile :face :zo)
-            tile))
-        tiles))
+(defn- wake-the-dead [tile]
+  (if (= :gy (:face tile))
+    (assoc tile :face :zo)
+    tile))
 
 (defn- perform-match-actions [game match]
   (case match
     :fg (assoc game :foggy? true)
     :zo (-> game
-            (update-in [:sand] #(replace-remaining % (repeat 3 :zombie)))
-            (update-in [:tiles] wake-the-dead))
+            (update-in [:sand]
+                       #(replace-remaining % (repeat 3 :zombie)))
+            (update-tiles wake-the-dead))
     ;; default case
     game))
 
 (defn- check-for-match [game]
   (if-let [match (get-match game)]
     (-> game
-        (update-in [:tiles] match-revealed)
+        (update-tiles match-revealed)
         (perform-match-actions match))
     game))
 
-(defn- init-concealment [tiles]
-  (mapv (fn [tile]
-          (if (:revealed? tile)
-            (assoc tile :conceal-countdown 3)
-            tile))
-        tiles))
+(defn- init-concealment [tile]
+  (if (:revealed? tile)
+    (assoc tile :conceal-countdown 3)
+    tile))
 
 (defn- check-for-concealment [game]
   (if-not (can-reveal? game)
-    (update-in game [:tiles] init-concealment)
+    (update-tiles game init-concealment)
     game))
 
 (defn reveal-tile [game index]
@@ -77,29 +75,27 @@
         (check-for-concealment))
     game))
 
-(defn- hide-faces [tiles]
-  (mapv (fn [tile]
-          (if (or (:matched? tile)
-                  (:revealed? tile))
-            tile
-            (dissoc tile :face)))
-        tiles))
+(defn- hide-faces [tile]
+  (if (or (:matched? tile)
+          (:revealed? tile))
+    tile
+    (dissoc tile :face)))
 
+;; We cannot do this through the update-tiles function, because it would not
+;; give use the index
 (defn- assoc-ids [tiles]
   (map-indexed #(assoc %2 :id %1) tiles))
 
 (defn prep [game]
   (-> game
       (update-in [:tiles] assoc-ids)
-      (update-in [:tiles] hide-faces)))
+      (update-tiles hide-faces)))
 
-(defn- conceal-faces [tiles]
-  (mapv (fn [tile]
-          (case (:conceal-countdown tile)
-            nil tile
-            1 (dissoc tile :conceal-countdown :revealed?)
-            (update tile :conceal-countdown dec)))
-        tiles))
+(defn- conceal-faces [tile]
+  (case (:conceal-countdown tile)
+    nil tile
+    1 (dissoc tile :conceal-countdown :revealed?)
+    (update tile :conceal-countdown dec)))
 
 (defn tick [game]
-  (update-in game [:tiles] conceal-faces))
+  (update-tiles game conceal-faces))
