@@ -34,7 +34,6 @@
     (is (= (frequencies (:sand (create-game)))
            {:remaining 30}))))
 
-
 (deftest reveal-tiles
   (testing "revealing the first tile"
     (is (= (->> (reveal-tile (create-game) 0)
@@ -63,8 +62,8 @@
            #{:h1 :h2})))
 
   (let [one-match-game (->> (create-game)
-                          (reveal-one :h4)
-                          (reveal-one :h4))]
+                            (reveal-one :h4)
+                            (reveal-one :h4))]
     (testing "revealing 2 times the same type of tile matches them"
       (is (= (->> one-match-game
                   :tiles
