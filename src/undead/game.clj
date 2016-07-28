@@ -57,11 +57,24 @@
         (perform-match-actions match))
     game))
 
+(defn- init-concealment [tiles]
+  (mapv (fn [tile]
+          (if (:revealed? tile)
+            (assoc tile :conceal-countdown 3)
+            tile))
+        tiles))
+
+(defn- check-for-concealment [game]
+  (if-not (can-reveal? game)
+    (update-in game [:tiles] init-concealment)
+    game))
+
 (defn reveal-tile [game index]
   (if (can-reveal? game)
     (-> game
         (assoc-in [:tiles index :revealed?] true)
-        (check-for-match))
+        (check-for-match)
+        (check-for-concealment))
     game))
 
 (defn- hide-faces [tiles]
@@ -79,3 +92,14 @@
   (-> game
       (update-in [:tiles] assoc-ids)
       (update-in [:tiles] hide-faces)))
+
+(defn- conceal-faces [tiles]
+  (mapv (fn [tile]
+          (case (:conceal-countdown tile)
+            nil tile
+            1 (dissoc tile :conceal-countdown :revealed?)
+            (update tile :conceal-countdown dec)))
+        tiles))
+
+(defn tick [game]
+  (update-in game [:tiles] conceal-faces))

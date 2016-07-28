@@ -46,9 +46,9 @@
                 (reveal-one :h2)
                 :tiles
                 (filter :revealed?)
-                set)
-           #{{:face :h1, :revealed? true}
-             {:face :h2, :revealed? true}})))
+                (map :face)
+                sort)
+           [:h1 :h2])))
 
   (testing "revealing a third tile does not do anything"
     (is (= (->> (create-game)
@@ -58,8 +58,8 @@
                 :tiles
                 (filter :revealed?)
                 (map :face)
-                set)
-           #{:h1 :h2})))
+                sort)
+           [:h1 :h2])))
 
   (let [one-match-game (->> (create-game)
                             (reveal-one :h4)
@@ -143,3 +143,20 @@
                 :tiles
                 (map :id))
            (range 0 16)))))
+
+(deftest passing-of-time
+  (testing "tiles are visible after 2 ticks"
+    (is (= (->> (create-game)
+                (reveal-one :h1)
+                (reveal-one :h2)
+                tick tick
+                :tiles (filter :revealed?) count)
+           2)))
+
+  (testing "tiles are hidden after 3 ticks"
+    (is (= (->> (create-game)
+                (reveal-one :h1)
+                (reveal-one :h2)
+                tick tick tick
+                :tiles (filter :revealed?) count)
+           0))))
