@@ -15,7 +15,8 @@ In this repo, each commit is following along with the awesome [parens-of-the-dea
 
 * catch uncaught exceptions globally for the server (got bitten by a really bad
   case of https://stuartsierra.com/2015/05/27/clojure-uncaught-exceptions)
-* use devcards to "test" the UI
+* add proper logging? (related to the previous item)
+* use devcards to illustrate the UI
 * load magic numbers from config, make it play nice with the web server component
 * wrap the web-socket in a component on the client?
 * try to use aleph
