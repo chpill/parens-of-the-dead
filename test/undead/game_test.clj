@@ -2,9 +2,6 @@
   (:require [clojure.test :refer :all]
             [undead.game :refer :all]))
 
-;; Helper ;;
-;;;;;;;;;;;;
-
 (defn- index-of-face [game face]
   (->> (map-indexed vector (:tiles game))
        (filter #(and (= face (-> % second :face))
@@ -13,9 +10,6 @@
 
 (defn reveal-one [face game]
   (reveal-tile game (index-of-face game face)))
-
-;; Tests ;;
-;;;;;;;;;;;
 
 (deftest game-creation
   (testing "tile frequencies"
@@ -144,6 +138,10 @@
                 (map :id))
            (range 0 16)))))
 
+(defn- tick-n [n game]
+  ((let [tick-composition (apply comp (repeat n tick))]
+     tick-composition) game))
+
 (deftest passing-of-time
   (testing "tiles are visible after 2 ticks"
     (is (= (->> (create-game)
@@ -160,12 +158,34 @@
                 tick tick tick
                 :tiles (filter :revealed?) count)
            0)))
-  (testing
-      "the face remains after 4 ticks so that they can be displayed during
+
+  (testing "revealed face remains after 4 ticks so that they can be displayed during
   \"flip back\" animation")
   (is (= (->> (create-game)
               (reveal-one :h1)
               (reveal-one :h2)
               tick tick tick tick
               prep :tiles (map :face) frequencies)
-         {nil 14, :h1 1, :h2 1})))
+         {nil 14, :h1 1, :h2 1}))
+
+  (testing "every 5 ticks, we deduct 1 sand"
+    (is (= (->> (create-game)
+                (tick-n 5)
+                :sand (take 2))
+           [:gone :remaining])))
+
+  (testing "after 30 seconds, "
+    (testing " wait 1 tick and you are dead"
+      (is (->> (create-game) (tick-n 151) :dead?)))
+
+    (testing "all the sand is gone"
+      (is (= (->> (create-game)
+                  (tick-n 150)
+                  :sand frequencies)
+             {:gone 30})))
+
+    (testing "if more time passes, nothing happens"
+      (is (= (->> (create-game)
+                  (tick-n 155)
+                  :sand frequencies)
+             {:gone 30})))))

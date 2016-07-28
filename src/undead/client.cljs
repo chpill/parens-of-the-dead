@@ -17,4 +17,6 @@
           ;; For now we pass the channel all the way down...
           ;; This is really cumbersome, we should find a better way to do this!
           (render-game game game-container ws-channel)
-          (recur))))))
+          (if (:dead? game)
+            (set! (.-className (.-body js/document)) "game-over")
+            (recur)))))))
