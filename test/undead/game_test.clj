@@ -103,6 +103,7 @@
              (->> zombified-game
                   :sand
                   (take 4)))))
+
     (testing "turns the graveyard into a zombie"
       (is (= (->> zombified-game :tiles (map :face) frequencies)
              {:h1 2 :h2 2 :h3 2 :h4 2 :h5 2
@@ -117,6 +118,7 @@
                 (map :face)
                 frequencies)
            {nil 16})))
+
   (testing "keeps the revealed faces"
     (is (= (->> (create-game)
                 (reveal-one :h1)
@@ -125,6 +127,7 @@
                 (map :face)
                 frequencies)
            {nil 15, :h1 1})))
+
   (testing "keeps the matched faces"
     (is (= (->> (create-game)
                 (reveal-one :h1)
@@ -134,6 +137,7 @@
                 (map :face)
                 frequencies)
            {nil 14, :h1 2})))
+
   (testing "add ids to recognize the tiles"
     (is (= (->> (create-game)
                 prep

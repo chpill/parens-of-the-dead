@@ -14,6 +14,8 @@ In this repo, each commit is following along with the awesome [parens-of-the-dea
 ## Ideas
 
 * use devcards to "test" the UI
+* load magic numbers from config, make it play nice with the web server component
+* wrap the web-socket in a component on the client?
 * try to use aleph
 * build a health-check endpoint
 * build a reporting endpoint (how many active ws? other stats?)
