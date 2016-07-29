@@ -160,13 +160,13 @@
            0)))
 
   (testing "revealed face remains after 4 ticks so that they can be displayed during
-  \"flip back\" animation")
-  (is (= (->> (create-game)
-              (reveal-one :h1)
-              (reveal-one :h2)
-              tick tick tick tick
-              prep :tiles (map :face) frequencies)
-         {nil 14, :h1 1, :h2 1}))
+  \"flip back\" animation"
+    (is (= (->> (create-game)
+                (reveal-one :h1)
+                (reveal-one :h2)
+                tick tick tick tick
+                prep :tiles (map :face) frequencies)
+           {nil 14, :h1 1, :h2 1})))
 
   (testing "every 5 ticks, we deduct 1 sand"
     (is (= (->> (create-game)
@@ -176,7 +176,7 @@
 
   (testing "after 30 seconds, "
     (testing " wait 1 tick and you are dead"
-      (is (->> (create-game) (tick-n 151) :dead?)))
+      (is (:dead? (->> (create-game) (tick-n 151)))))
 
     (testing "all the sand is gone"
       (is (= (->> (create-game)
@@ -189,3 +189,44 @@
                   (tick-n 155)
                   :sand frequencies)
              {:gone 30})))))
+
+;; helper function to win the game
+(def match-all-houses
+  (->> [:h1 :h2 :h3 :h4 :h5]
+       (map (fn [house]
+              (fn [game] (->> game (reveal-one house) (reveal-one house)))))
+       (apply comp)))
+
+(deftest winning-the-game
+  (testing "2 ticks after revealing all houses, you are not (yet) safe"
+    (is ((complement :safe?)
+         (->> (create-game)
+              match-all-houses
+              tick tick))))
+
+  (testing "3 ticks after revealing all houses, you go to the round 2"
+    (let [game-round-2 (->> (create-game)
+                            match-all-houses
+                            tick tick tick)]
+      (testing "you get 30 more seconds"
+        (is (= (->> game-round-2 :sand count)
+               60)))
+
+      (testing "you get a new set of fresh tiles"
+        (is (empty? (->> game-round-2 :tiles (filter :matched?)))))
+
+      (testing "3 ticks after revealing all houses, you go to round 3"
+        (let [game-round-3 (->> game-round-2
+                                match-all-houses
+                                tick tick tick)]
+          (testing "you get 30 more seconds one last time"
+            (is (= (->> game-round-3 :sand count)
+                   90)))
+
+          (testing "you get a fresh set of tiles one last time"
+            (is (empty? (->> game-round-3 :tiles (filter :matched?)))))
+
+          (testing "3 ticks after revealing all houses, you are safe. You won!"
+            (is (:safe? (->> game-round-3
+                             match-all-houses
+                             tick tick tick)))))))))

@@ -5,8 +5,11 @@
             :fg :fg
             :gy])
 
+(defn- create-board []
+  (shuffle (map #(assoc {} :face %) tiles)))
+
 (defn create-game []
-  {:tiles (shuffle (map #(assoc {} :face %) tiles))
+  {:tiles (create-board)
    :sand (repeat 30 :remaining)
    :ticks 0})
 
@@ -21,13 +24,13 @@
 
 (defn- match-revealed [tile]
   (if (:revealed? tile)
-    {:face (:face tile) :matched? true}
+    (-> tile (assoc :matched? true) (dissoc :revealed?))
     tile))
 
 (defn get-match [game]
   (let [revealed (revealed-tiles game)]
     (when (and (= 2 (count revealed))
-               (= 1 (count (set revealed))))
+               (= 1 (count (set (map :face revealed)))))
       (:face (first revealed)))))
 
 (defn- replace-remaining [sand replacement]
@@ -49,7 +52,6 @@
             (update :sand
                     #(replace-remaining % (repeat 3 :zombie)))
             (update-tiles wake-the-dead))
-    ;; default case
     game))
 
 (defn- check-for-match [game]
@@ -69,12 +71,24 @@
     (update-tiles game init-concealment)
     game))
 
+(defn- found-all-houses? [game]
+  (->> (:tiles game)
+       (remove :matched?)
+       (map :face)
+       (not-any? #{:h1 :h2 :h3 :h4 :h5})))
+
+(defn- check-for-completion [game]
+  (if (found-all-houses? game)
+    (assoc game :completion-countdown 3)
+    game))
+
 (defn reveal-tile [game index]
   (if (can-reveal? game)
     (-> game
         (assoc-in [:tiles index :revealed?] true)
         (check-for-match)
-        (check-for-concealment))
+        (check-for-concealment)
+        (check-for-completion))
     game))
 
 (defn- hide-faces [tile]
@@ -106,10 +120,30 @@
     (update game :sand #(replace-remaining % [:gone]))
     game))
 
+(defn- last-round? [game]
+  (= 90 (count (:sand game))))
+
+(defn- complete-round [game]
+  (if (last-round? game)
+    (assoc game :safe? true)
+    (-> game
+        (update :sand #(concat % (repeat 30 :remaining)))
+        (assoc :tiles (create-board)))))
+
+(defn- count-down-completion [game]
+  (case (:completion-countdown game)
+    nil game
+    1 (-> game
+          (dissoc :completion-countdown)
+          complete-round)
+    (update game :completion-countdown dec)))
+
+
 (defn tick [game]
   (if (not-any? #{:remaining} (:sand game))
     (assoc game :dead? true)
     (-> game
         (update :ticks inc)
         (count-down-sand)
+        (count-down-completion)
         (update-tiles conceal-faces))))
