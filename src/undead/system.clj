@@ -3,6 +3,12 @@
             [org.httpkit.server :as httpkit]
             [undead.web :refer [app]]))
 
+(def global-exception-catcher
+  (Thread/setDefaultUncaughtExceptionHandler
+   (reify Thread$UncaughtExceptionHandler
+     (uncaughtException [this thread throwable]
+       (println throwable)))))
+
 (defn- start-server [handler port]
   (let [server (httpkit/run-server handler {:port port})]
     (println (str "Started undead server on http://localhost:" port))
