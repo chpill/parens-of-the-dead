@@ -10,7 +10,9 @@
                  [compojure "1.6.0-beta1"]
                  [quiescent "0.3.2"]
                  [jarohen/chord "0.7.0"]
-                 [org.clojure/core.async "0.2.385"]]
+                 [org.clojure/core.async "0.2.385"]
+                 [com.cognitect/transit-clj "0.8.288"]
+                 [com.cognitect/transit-cljs "0.8.239"]]
   :main undead.system
   :profiles {:dev {:plugins [[lein-cljsbuild "1.1.3"]
                              [lein-figwheel "0.5.4-1"]]

@@ -14,7 +14,7 @@ In this repo, each commit is following along with the awesome [parens-of-the-dea
 ## Ideas
 
 * [X] catch uncaught exceptions globally for the server (got bitten by a really bad case of https://stuartsierra.com/2015/05/27/clojure-uncaught-exceptions)
-* [ ] use transit to communicate the game to the client
+* [X] use transit to communicate the game to the client
 * [ ] add proper logging? (related to the previous item)
 * [ ] use devcards to illustrate the UI
 * [ ] load magic numbers from config, make it play nice with the web server component
